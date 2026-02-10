@@ -1,0 +1,35 @@
+{
+  "phase": 0,
+  "timestamp": "2026-02-10T09:14:13.488613",
+  "gpu": "NVIDIA A100-SXM4-40GB",
+  "model_id": "google/medgemma-1.5-4b-it",
+  "test1_single_image": true,
+  "test2_max_images": 8,
+  "test2_details": {
+    "1": {
+      "status": "PASS",
+      "response_len": 302,
+      "response_preview": "The image shows a heterogeneous tumor microenvironment with a mix of cellular and non-cellular components. There are several distinct regions with varying densities of cells and different appearances."
+    },
+    "2": {
+      "status": "PASS",
+      "response_len": 272,
+      "response_preview": "The image shows a heterogeneous tumor microenvironment with a mix of different cell types and structures. There are areas with more cellularity and other areas with more extracellular matrix. The pres"
+    },
+    "4": {
+      "status": "PASS",
+      "response_len": 272,
+      "response_preview": "The tumor microenvironment appears to be characterized by a mix of cellular and non-cellular components. There are several distinct regions with varying densities of cells and non-cellular material. T"
+    },
+    "8": {
+      "status": "PASS",
+      "response_len": 342,
+      "response_preview": "The tumor microenvironment is characterized by a dense collection of various cell types, including lymphocytes, macrophages, and fibroblasts, interspersed with tumor cells. There is also evidence of a"
+    }
+  },
+  "test3_json_parse_rate": 100.0,
+  "test3_successes": 10,
+  "test3_total": 10,
+  "architecture_decision": "multi_image",
+  "architecture_description": "Multi-image input (4-8 patches per call)"
+}

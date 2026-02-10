@@ -8,6 +8,7 @@ Run:
 from __future__ import annotations
 
 import argparse
+import gc
 import json
 import sys
 import time
@@ -31,6 +32,18 @@ def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Run MedGemma multi-image capability checks.")
     parser.add_argument("--model-id", default=DEFAULT_MODEL_ID, help="Hugging Face model ID")
     parser.add_argument(
+        "--device",
+        default="auto",
+        choices=["auto", "cpu", "mps", "cuda"],
+        help="Force device (default: auto).",
+    )
+    parser.add_argument(
+        "--mps-mem-fraction",
+        type=float,
+        default=None,
+        help="Limit per-process MPS memory usage (0-1). Default: unset (uses PyTorch default).",
+    )
+    parser.add_argument(
         "--tests",
         default="1,2,4,8",
         help="Comma-separated image counts to test (e.g. 1,2,4,8)",
@@ -38,16 +51,75 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--synthetic-patches", type=int, default=5, help="Number of synthetic patches")
     parser.add_argument("--max-new-tokens", type=int, default=160, help="Generation length")
     parser.add_argument("--min-new-tokens", type=int, default=24, help="Minimum generation length")
+    parser.add_argument(
+        "--use-cache",
+        action=argparse.BooleanOptionalAction,
+        default=None,
+        help="Enable KV cache (faster, higher memory). Default: on for CUDA, off otherwise.",
+    )
     parser.add_argument("--seed", type=int, default=7, help="Random seed")
     return parser.parse_args()
 
+def resolve_runtime(requested_device: str) -> tuple[torch.device, torch.dtype]:
+    if requested_device != "auto":
+        if requested_device == "cuda" and not torch.cuda.is_available():
+            raise RuntimeError("Requested device=cuda but CUDA is not available")
+        if requested_device == "mps" and not torch.backends.mps.is_available():
+            raise RuntimeError("Requested device=mps but MPS is not available")
+        dtype = torch.bfloat16 if requested_device == "cuda" else torch.float16 if requested_device == "mps" else torch.float32
+        return torch.device(requested_device), dtype
 
-def resolve_runtime() -> tuple[torch.device, torch.dtype]:
     if torch.cuda.is_available():
         return torch.device("cuda"), torch.bfloat16
     if torch.backends.mps.is_available():
         return torch.device("mps"), torch.float16
     return torch.device("cpu"), torch.float32
+
+
+def move_inputs_to_device(inputs: dict, device: torch.device, dtype: torch.dtype) -> dict:
+    moved: dict = {}
+    for key, value in inputs.items():
+        if torch.is_tensor(value):
+            if value.is_floating_point():
+                moved[key] = value.to(device=device, dtype=dtype)
+            else:
+                moved[key] = value.to(device=device)
+        else:
+            moved[key] = value
+    return moved
+
+
+def maybe_limit_mps_memory(device: torch.device, fraction: float | None) -> None:
+    if device.type != "mps":
+        return
+    if fraction is None:
+        return
+    if not (0.0 < fraction <= 1.0):
+        return
+    if hasattr(torch.mps, "set_per_process_memory_fraction"):
+        torch.mps.set_per_process_memory_fraction(fraction)
+
+
+def print_mps_stats() -> None:
+    if not hasattr(torch, "mps"):
+        return
+    try:
+        rec = torch.mps.recommended_max_memory() / (1024**3)
+        cur = torch.mps.current_allocated_memory() / (1024**3)
+        drv = torch.mps.driver_allocated_memory() / (1024**3)
+        print(f"MPS mem: recommended_max={rec:.2f}GiB current_alloc={cur:.2f}GiB driver_alloc={drv:.2f}GiB")
+    except Exception:
+        pass
+
+def cleanup(device: torch.device) -> None:
+    gc.collect()
+    if device.type == "mps" and hasattr(torch.mps, "empty_cache"):
+        try:
+            torch.mps.empty_cache()
+        except Exception:
+            pass
+    if device.type == "cuda":
+        torch.cuda.empty_cache()
 
 
 def make_synthetic_patch(rng: np.random.Generator, n_nuclei: int = 500, size: int = 512) -> Image.Image:
@@ -128,14 +200,18 @@ def main() -> int:
         print("FAIL: --min-new-tokens cannot be greater than --max-new-tokens", file=sys.stderr)
         return 1
     tests = [int(x.strip()) for x in args.tests.split(",") if x.strip()]
-    device, dtype = resolve_runtime()
+    device, dtype = resolve_runtime(args.device)
+    maybe_limit_mps_memory(device, args.mps_mem_fraction)
+    use_cache = args.use_cache if args.use_cache is not None else (device.type == "cuda")
 
     rng = np.random.default_rng(args.seed)
 
     print("=" * 60)
     print("TEST 2: MedGemma Multi-Image - GO/NO-GO Decision")
     print("=" * 60)
-    print(f"Runtime: device={device}, dtype={dtype}")
+    print(f"Runtime: device={device}, dtype={dtype}, use_cache={use_cache}")
+    if device.type == "mps":
+        print_mps_stats()
 
     images = download_public_images()
 
@@ -156,9 +232,15 @@ def main() -> int:
     model_kwargs: dict[str, Any] = {"dtype": dtype}
     if device.type == "cuda":
         model_kwargs["device_map"] = "auto"
+        model_kwargs["offload_buffers"] = True
+        # CUDA optimizations
+        torch.backends.cudnn.benchmark = True
+        torch.backends.cuda.matmul.fp32_precision = "tf32"
+        torch.backends.cudnn.fp32_precision = "tf32"
     model = AutoModelForImageTextToText.from_pretrained(args.model_id, **model_kwargs)
     if device.type != "cuda":
         model = model.to(device)
+    model.eval()
     print("Model loaded.")
 
     best_success = 0
@@ -177,7 +259,8 @@ def main() -> int:
                 tokenize=True,
                 return_dict=True,
                 return_tensors="pt",
-            ).to(device)
+            )
+            inputs = move_inputs_to_device(dict(inputs), device=device, dtype=dtype)
 
             input_len = inputs["input_ids"].shape[-1]
             print(f"  Input tokens: {input_len}")
@@ -190,11 +273,13 @@ def main() -> int:
                     min_new_tokens=args.min_new_tokens,
                     do_sample=False,
                     pad_token_id=processor.tokenizer.eos_token_id,
+                    use_cache=use_cache,
                 )
             elapsed = time.time() - start
             new_tokens = generation[0][input_len:]
             print(f"  Generated tokens: {new_tokens.shape[-1]}")
-            decoded = processor.decode(new_tokens, skip_special_tokens=True)
+            decoded_list = processor.post_process_image_text_to_text(generation, skip_special_tokens=True)
+            decoded = decoded_list[0].split("model\n")[-1].strip() if decoded_list else ""
             if not decoded.strip():
                 with torch.inference_mode():
                     generation = model.generate(
@@ -205,10 +290,12 @@ def main() -> int:
                         temperature=0.2,
                         top_p=0.9,
                         pad_token_id=processor.tokenizer.eos_token_id,
+                        use_cache=use_cache,
                     )
                 new_tokens = generation[0][input_len:]
                 print(f"  Generated tokens (retry): {new_tokens.shape[-1]}")
-                decoded = processor.decode(new_tokens, skip_special_tokens=True)
+                decoded_list = processor.post_process_image_text_to_text(generation, skip_special_tokens=True)
+                decoded = decoded_list[0].split("model\n")[-1].strip() if decoded_list else ""
 
             valid_json, candidate = extract_json(decoded)
             print(f"  Inference time: {elapsed:.1f}s")
@@ -236,6 +323,7 @@ def main() -> int:
         "If only 1-2 worked: use 2x2/3x3 collage fallback.\n"
         "If none worked: verify GPU, auth, and model access."
     )
+    cleanup(device)
     return 0
 
 

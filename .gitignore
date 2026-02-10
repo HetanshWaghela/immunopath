@@ -1,6 +1,9 @@
 CONTEXT_NOTEBOOK.ipynb
 EXECUTION_PLAN.md
 IMMUNOPATH_LUNG_SPEC.md
+MASTER_CONTEXT.md
+
+colab_notebooks/
 .codex
 .cursor
 
