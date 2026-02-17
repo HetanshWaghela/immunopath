@@ -80,28 +80,33 @@
 ### Phase 3 — Training Data Creation
 | Field | Value |
 |-------|-------|
-| **Status** | `NEEDS RE-RUN` ⚠️ (ran on dev subset; full data now available) |
+| **Status** | `COMPLETE` ✅ **FULL DATASET** |
 | **Colab Notebook** | `colab_run_notebooks/phase_3_colab.ipynb` |
-| **Previous Run (dev)** | 19 matched → 15 train / 1 val / 3 test |
-| **Expected Full Run** | ~949 matched → ~760 train / ~95 val / ~95 test |
-| **Code Changes Needed** | **None** — code auto-discovers all slides with patches |
-| **GPU Needed** | CPU only (no GPU required) |
-| **Estimated Time** | ~5-10 minutes |
-| **Notes** | Just re-run the entire notebook. The join logic will find all 949 slides now. Patient-level split verified. |
+| **Matched Samples** | **939** (11 unmatched: no_patches) |
+| **train.jsonl** | **751 samples** (CD274: 376 low / 375 high) |
+| **val.jsonl** | **94 samples** (CD274: 47 high / 47 low) |
+| **test.jsonl** | **94 samples** (CD274: 47 high / 47 low) |
+| **Patient-level split** | **Verified** — no leakage, stratified by cancer_type + CD274 |
+| **TME Distribution (train)** | D: 261, IE: 177, F: 168, IE/F: 124, unknown: 21 |
+| **MSI Distribution (train)** | MSS: 745, MSI-H: 4, unknown: 2 |
+| **Patches/sample** | mean=8.0, min=1, max=8 |
+| **Notes** | By project: LUAD 470 / LUSC 469. All 939 JSONL records verified (valid JSON + valid paths). |
 
 ---
 
 ### Phase 4 — Zero-Shot Baseline
 | Field | Value |
 |-------|-------|
-| **Status** | `NEEDS RE-RUN` ⚠️ (ran on 4 eval samples; need full test set) |
+| **Status** | `COMPLETE` ✅ (inference done) — `NEEDS RE-RUN` ⚠️ (metrics all 0 due to key normalization bug) |
 | **Colab Notebook** | `colab_run_notebooks/phase_4_colab.ipynb` |
-| **Previous Run (dev)** | 4 eval samples — metrics unreliable |
-| **Expected Full Run** | ~95 test + ~95 val = ~190 eval samples |
-| **Code Changes Needed** | **None** — handles any number of eval samples |
-| **GPU Needed** | L4 24GB (4-bit quantized inference) |
-| **Estimated Time** | ~30-50 minutes for ~190 samples |
-| **Notes** | Run AFTER Phase 3 re-run. Will produce meaningful metrics. |
+| **GPU Used** | NVIDIA L4 (23.7 GB) |
+| **Samples Evaluated** | **188** (94 test + 94 val) |
+| **JSON Parse Rate** | **94%** (176/188) — good baseline |
+| **Avg Inference Time** | 26.4s per sample (~83 min total) |
+| **CD274 AUC** | **N/A** (bug: key normalization was case-sensitive, model outputs mixed-case keys) |
+| **All Other Metrics** | **N/A** (same bug — 0 samples matched for every metric) |
+| **Bug Found & Fixed** | `normalize_prediction_keys` was case-sensitive; model outputs `CD274_RNA_proxy_level`, `MSI_status`, `TIL_fraction` etc. Fixed: now lowercases all keys before mapping. |
+| **Notes** | Re-run the METRICS CELL ONLY (cell 19+) after restarting runtime to pick up the fixed `normalize_prediction_keys`. The predictions JSONL is saved and valid — no need to re-run inference. |
 
 ---
 
