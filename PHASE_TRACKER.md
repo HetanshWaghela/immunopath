@@ -13,9 +13,9 @@
 
 | Field | Value |
 |-------|-------|
-| **Current Phase** | Phase 3 — Re-run on FULL dataset (then 4 → 5 → 6) |
-| **Last Updated** | 2026-02-16 |
-| **Days Remaining** | ~8 (deadline: Feb 24, 2026 11:59 PM UTC) |
+| **Current Phase** | Phase 6 — Evaluation + Calibration |
+| **Last Updated** | 2026-02-18 |
+| **Days Remaining** | ~6 (deadline: Feb 24, 2026 11:59 PM UTC) |
 | **Colab Runtime** | Google Colab Pro (A100 40GB) |
 | **Repo** | `/Users/Hetansh/Github/medgemma-impact-challenge` |
 | **Data Status** | ✅ FULL DATASET READY — 950 slides downloaded, 949 tiled, 950 signatures |
@@ -113,15 +113,27 @@
 ### Phase 5 — Fine-Tuning MedGemma
 | Field | Value |
 |-------|-------|
-| **Status** | `NEEDS RE-RUN` ⚠️ (ran on 15 train samples; need full training set) |
+| **Status** | `COMPLETE` ✅ |
 | **Colab Notebook** | `colab_run_notebooks/phase_5_colab.ipynb` |
-| **Previous Run (dev)** | 15 samples, 2.1 min, loss 1.1828 |
-| **Expected Full Run** | ~760 train, ~95 val, est. 1.5-3 hours on A100 |
-| **Code Changes Applied** | `save_steps` fixed: 500 → 100 (ensures checkpoint during training) |
-| **Config** | DoRA r=16, α=32, batch=1, grad_accum=8, lr=2e-4, epochs=3, max_patches=4 |
-| **GPU Needed** | **A100 40GB** (ONLY phase needing A100) |
-| **Estimated Steps** | ~285 total (95 steps/epoch × 3 epochs) |
-| **Notes** | Run AFTER Phase 3 re-run. SSD pre-copy handles full dataset. Eval every 100 steps. |
+| **GPU Used** | NVIDIA A100-SXM4-40GB |
+| **Train Samples** | 751 |
+| **Val Samples** | 94 |
+| **Total Steps** | 282 (94 steps/epoch × 3 epochs) |
+| **Training Time** | 96.3 min (~1.6 hours) |
+| **Final Train Loss** | **0.0925** |
+| **Best Eval Loss** | **0.0922** (step 200) |
+| **Eval Loss @ Step 100** | 0.0946 |
+| **Eval Loss @ Step 200** | 0.0922 |
+| **Config** | DoRA r=16, α=32, batch=1, grad_accum=8, lr=1e-4, epochs=3, max_patches=4 |
+| **Quantization** | QDoRA 4-bit NF4 + double quant |
+| **Optimizer** | adamw_bnb_8bit |
+| **Gradient Checkpointing** | Yes (use_reentrant=True) |
+| **Flash Attention** | Yes (flash_attention_2) |
+| **VRAM Before Training** | 5.24 GB allocated, 9.22 GB reserved |
+| **Adapters Saved** | `/ImmunoPath/models/immunopath-v1/lora_adapters` |
+| **Inference Test** | ✅ Valid JSON with all 11 keys |
+| **Overfitting** | None — train/eval loss nearly identical |
+| **Notes** | Collator fix applied (unsqueeze 3D pixel_values). SSD pre-copy: 3375 patches in 71s. |
 
 ---
 
