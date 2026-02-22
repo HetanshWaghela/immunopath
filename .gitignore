@@ -1,28 +1,74 @@
-colab_notebooks/
-.codex
-.cursor
+# Environments
+.env
+.venv
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
 
+# Kaggle / Colab specific
+.ipynb_checkpoints/
 __pycache__/
 *.pyc
 *.pyo
 *.pyd
-*.pyw
-*.pyz
-*.pywz
-*.pyzw
-*.pyzwz
 
-venv/
-.orchestra-skills.json
+# Datasets & Weights
+*.pt
+*.pth
+*.h5
+*.hdf5
+*.onnx
+*.safetensors
+*.bin
+*.msgpack
+data/
+datasets/
+models/
+weights/
+patches/
+*.jpg
+*.jpeg
+*.png
+*.tif
+*.tiff
+*.svs
+*.ndpi
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# IDEs
 .vscode/
+.idea/
+*.swp
 
+# Logs and databases
+*.log
+*.sqlite
+*.db
 
+# Temporary Demo Files
+/tmp/
+pipeline_patches/
+immunopath_demo_patches/
+immunopath_pipeline_result.json
 
+# Gemeni / Antigravity IDE
+.gemini/
+.antigravity/
 
+# Internal Agent/Documentation
+.codex/
+.cursor/
+.orchestra-skills.json
 
-//for  context and lllm docs
-CONTEXT_NOTEBOOK.ipynb
-EXECUTION_PLAN.md
-IMMUNOPATH_LUNG_SPEC.md
-MASTER_CONTEXT.md
-LLM_HANDOFF_SUMMARY.md
+# Archive (dev notebooks, test scripts, internal docs)
+_archive/

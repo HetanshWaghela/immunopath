@@ -13,7 +13,7 @@
 
 | Field | Value |
 |-------|-------|
-| **Current Phase** | Phase 6 — Evaluation + Calibration |
+| **Current Phase** | Phase 5 v3 → Phase 6 v3 (ready to run on Colab) |
 | **Last Updated** | 2026-02-18 |
 | **Days Remaining** | ~6 (deadline: Feb 24, 2026 11:59 PM UTC) |
 | **Colab Runtime** | Google Colab Pro (A100 40GB) |
@@ -140,13 +140,16 @@
 ### Phase 6 — Evaluation + Calibration
 | Field | Value |
 |-------|-------|
-| **Status** | `NOT STARTED` |
-| **Source Code** | `colab_notebooks/Phase_6_Evaluation.py` (ready — bug fixed) |
-| **Bug Fix Applied** | `total_mem` → `total_memory` (line 77) |
+| **Status** | `v2 COMPLETE — FAILED ALL TARGETS` ⚠️ → `v3 READY TO RUN` |
+| **Source Code** | `colab_run_notebooks/phase_6_v3_colab.ipynb` (ready) |
+| **v2 Results** | CD274 AUC=0.5638, MSI AUC=0.5000, TME Acc=0.2473, TIL ρ=-0.174, Immune MAE=0.3032 — ALL targets missed |
+| **v2 Root Causes** | 1) Gradient signal dilution (9% useful), 2) 1 epoch insufficient, 3) LR 2e-4 too aggressive, 4) PEFT tied weight corruption, 5) MSI class imbalance, 6) No response-only masking |
+| **v3 Fixes** | 1) Response-only loss masking (QLoRA paper +2-5%), 2) REMOVED modules_to_save (PEFT #1750/#2864), 3) 3 epochs + early stopping, 4) LR 1e-4, 5) MSI-H 5× oversampling |
+| **v3 Speed Opts** | max_length 2048→512, batch 4→8, grad_accum 4→2, eval_batch 2→8, eval 1×/epoch |
 | **GPU Needed** | L4 24GB (inference only) |
 | **Expected Time** | ~30-50 min for inference + metrics |
 | **Target Metrics** | CD274 AUC >0.70, MSI AUC >0.75, TME Acc >0.65, TIL ρ >0.60, ECE <0.10 |
-| **Notes** | Convert .py to .ipynb or run cells manually. Loads Phase 4 zero-shot for comparison. |
+| **Notes** | v3 loads from `models/immunopath-v3/lora_adapters`. No weight tying issues. |
 
 ---
 
@@ -192,7 +195,7 @@ Phase 3 (CPU, ~5-10 min)     → Creates full JSONL files
     ↓
 Phase 4 (L4, ~30-50 min)     → Full zero-shot baseline metrics
     ↓
-Phase 5 (A100, ~1.5-3 hours) → Fine-tune on full training set
+Phase 5 (A100, ~20 min)       → Fine-tune on full training set (speed-optimized v3)
     ↓
 Phase 6 (L4, ~30-50 min)     → Full evaluation + calibration
     ↓
@@ -216,6 +219,11 @@ Phase 7-9 (L4/CPU)           → Integration, demo, submission
 | 2026-02-12 | All | Key normalization for model outputs | `normalize_prediction_keys()` maps to canonical schema |
 | 2026-02-16 | Phase 5 | save_steps: **100** (was 500) | Ensures checkpoints saved during full training run |
 | 2026-02-16 | Phase 6 | Bug fix: `total_mem` → `total_memory` | PyTorch API fix |
+| 2026-02-18 | Phase 5 | v3: Response-only loss masking | QLoRA paper Table 10: +2-5% MMLU. Google Forum confirms default was train-on-all. |
+| 2026-02-18 | Phase 5 | v3: REMOVED modules_to_save | PEFT #1750/#2864: passing both lm_head+embed_tokens UNTIES them. Maintainer recommends removal. |
+| 2026-02-18 | Phase 5 | v3: 3 epochs + early stopping (patience=3) | v2 had only 94 steps — insufficient for value learning |
+| 2026-02-18 | Phase 5 | v3: LR 1e-4 (was 2e-4) | Prevents catastrophic forgetting over 3 epochs |
+| 2026-02-18 | Phase 5 | v3: MSI-H oversampling 5× | v2 predicted ALL MSS (AUC=0.50) due to 98% class imbalance |
 
 ---
 
