@@ -1,11 +1,11 @@
 #!/usr/bin/env python3
-"""ImmunoPath Integration Pipeline — End-to-End H&E → Immunotherapy Recommendation.
+"""ImmunoPath Integration Pipeline - End-to-End H&E → Immunotherapy Recommendation.
 
 This pipeline integrates 4 HAI-DEF models into a single clinical decision-support system:
-  1. MedGemma (core)       — Fine-tuned VLM for immune profiling from H&E patches
-  2. TxGemma (drug info)   — Drug explanation and pharmacology insights
-  3. Path Foundation       — Patch-level visual feature embeddings
-  4. MedSigLIP (zero-shot) — Zero-shot image-text confidence signal
+  1. MedGemma (core)       - Fine-tuned VLM for immune profiling from H&E patches
+  2. TxGemma (drug info)   - Drug explanation and pharmacology insights
+  3. Path Foundation       - Patch-level visual feature embeddings
+  4. MedSigLIP (zero-shot) - Zero-shot image-text confidence signal
 
 All models run in mock mode by default (no GPU required). Toggle `use_mock=False` for real inference.
 
@@ -106,7 +106,7 @@ class MockMedGemma:
             til_fraction=0.15, til_density="low", immune_phenotype="desert",
             cd8_infiltration="low", immune_score=0.22, confidence=0.91,
         ),
-        # Index 2: inflamed + CD274-high + MSI-H → pembrolizumab (2 imgs, 5 imgs) — best demo
+        # Index 2: inflamed + CD274-high + MSI-H → pembrolizumab (2 imgs, 5 imgs) - best demo
         ImmuneProfile(
             cd274_expression="high", msi_status="MSI-H", tme_subtype="IE/F",
             til_fraction=0.45, til_density="moderate", immune_phenotype="inflamed",
@@ -158,10 +158,10 @@ class ImmunoPathPipeline:
     """End-to-end H&E → Immunotherapy Recommendation Pipeline.
 
     Integrates 4 HAI-DEF models:
-      1. MedGemma      — immune profiling from H&E patches
-      2. TxGemma       — drug pharmacology explanations
-      3. Path Foundation — patch visual embeddings
-      4. MedSigLIP     — zero-shot immune phenotype scoring
+      1. MedGemma      - immune profiling from H&E patches
+      2. TxGemma       - drug pharmacology explanations
+      3. Path Foundation - patch visual embeddings
+      4. MedSigLIP     - zero-shot immune phenotype scoring
 
     Parameters
     ----------
@@ -219,12 +219,12 @@ class ImmunoPathPipeline:
         t0 = time.time()
         models_used = []
 
-        # ── Step 1: MedGemma — Immune Profiling ──────────────────────────
+        # ── Step 1: MedGemma - Immune Profiling ──────────────────────────
         profile = self.medgemma.predict(image_paths)
         immune_sig = profile.to_dict()
         models_used.append("MedGemma (google/medgemma-1.5-4b-it)")
 
-        # ── Step 2: Guideline Engine — Treatment Recommendation ──────────
+        # ── Step 2: Guideline Engine - Treatment Recommendation ──────────
         recommendation = self.guideline_engine.get_recommendation(
             immune_sig, self.cancer_type
         )
@@ -233,7 +233,7 @@ class ImmunoPathPipeline:
         )
         models_used.append("Guideline Engine (rule-based, NCCN-aligned)")
 
-        # ── Step 3: TxGemma — Drug Explanations ──────────────────────────
+        # ── Step 3: TxGemma - Drug Explanations ──────────────────────────
         drug_explanations = []
         primary_drug = recommendation.get("primary_drug")
         if primary_drug and primary_drug != "None":
@@ -248,11 +248,11 @@ class ImmunoPathPipeline:
 
         models_used.append("TxGemma (google/txgemma-9b-chat)")
 
-        # ── Step 4: Path Foundation — Patch Embeddings ───────────────────
+        # ── Step 4: Path Foundation - Patch Embeddings ───────────────────
         embeddings = self.path_foundation.embed(image_paths)
         models_used.append("Path Foundation (google/path-foundation)")
 
-        # ── Step 5: MedSigLIP — Zero-Shot Phenotype Scores ───────────────
+        # ── Step 5: MedSigLIP - Zero-Shot Phenotype Scores ───────────────
         zs_scores = self.medsiglip.score(image_paths)
         models_used.append("MedSigLIP (google/medsiglip-448)")
 
@@ -277,7 +277,7 @@ class ImmunoPathPipeline:
 
 def main():
     parser = argparse.ArgumentParser(
-        description="ImmunoPath Pipeline — H&E → Immunotherapy Recommendation"
+        description="ImmunoPath Pipeline - H&E → Immunotherapy Recommendation"
     )
     parser.add_argument("--test", action="store_true", help="Run with mock data")
     parser.add_argument("--image", type=str, nargs="+", help="Path(s) to H&E patch images")

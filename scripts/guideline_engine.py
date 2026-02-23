@@ -6,7 +6,7 @@ based on immune signatures predicted by MedGemma. All biomarker-to-treatment
 logic uses publicly available evidence (FDA labels, pivotal trial eligibility
 criteria, NCCN-aligned biomarker thresholds).
 
-TxGemma is NOT used here — it provides optional drug explanations only
+TxGemma is NOT used here - it provides optional drug explanations only
 (see txgemma_integration.py).
 
 Run:
@@ -133,7 +133,7 @@ class ImmunotherapyGuidelines:
         ----------
         immune_signature:
             Dict produced by MedGemma fine-tuned model.  Expected keys
-            (all optional — missing keys trigger the default rule):
+            (all optional - missing keys trigger the default rule):
               - msi_status: "MSI-H" | "MSS" | "unknown"
               - msi_probability: float 0-1
               - pdl1_ihc_tps: float 0-100 (if clinical IHC available)
@@ -154,7 +154,7 @@ class ImmunotherapyGuidelines:
         cd274_expression = immune_signature.get("cd274_expression", "unknown")
         immune_phenotype = immune_signature.get("immune_phenotype", "unknown")
 
-        # Shared base — every recommendation carries the safety warning.
+        # Shared base - every recommendation carries the safety warning.
         base: Dict[str, Any] = {
             "source": "Rule-based engine (public evidence ruleset)",
             "primary_drug": None,
@@ -213,7 +213,7 @@ class ImmunotherapyGuidelines:
             base["regimen"] = "Consider ICI-based regimen (CONDITIONAL)"
             base["confidence"] = "conditional"
             base["confirmatory_tests_required"] = [
-                "PD-L1 IHC (22C3 or SP263) — REQUIRED before treatment",
+                "PD-L1 IHC (22C3 or SP263) - REQUIRED before treatment",
                 "Driver mutation testing (EGFR, ALK, ROS1, BRAF, etc.)",
             ]
             base["supporting_evidence"] = [
@@ -269,7 +269,7 @@ class ImmunotherapyGuidelines:
 
         lines.append("# ImmunoPath Clinical Decision Support Report")
         lines.append("")
-        lines.append(f"> ⚠️ {SAFETY_DISCLAIMER}")
+        lines.append(f"> {SAFETY_DISCLAIMER}")
         lines.append("")
 
         # --- Patient context ---
@@ -342,7 +342,7 @@ class ImmunotherapyGuidelines:
             lines.append("## Safety Warnings")
             lines.append("")
             for warning in recommendation["safety_warnings"]:
-                lines.append(f"- ⚠️ {warning}")
+                lines.append(f"- {warning}")
             lines.append("")
 
         # --- Drug reference (if a primary drug was recommended) ---

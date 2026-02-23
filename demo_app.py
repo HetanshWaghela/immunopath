@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""ImmunoPath Gradio Demo — H&E Histopathology → Immunotherapy Decision Support.
+"""ImmunoPath Gradio Demo - H&E Histopathology → Immunotherapy Decision Support.
 
 Single-page guided flow with 3 pre-loaded patient cases + upload option.
 All immune profiles and MedSigLIP scores are hardcoded from real model outputs.
@@ -37,7 +37,7 @@ from txgemma_engine import TxGemmaExplainer
 # ---------------------------------------------------------------------------
 
 PATIENT_CASES: Dict[str, Dict[str, Any]] = {
-    "Patient A — Inflamed Responder": {
+    "Patient A - Inflamed Responder": {
         "immune_profile": {
             "cd274_expression": "high",
             "msi_status": "MSS",
@@ -55,7 +55,7 @@ PATIENT_CASES: Dict[str, Dict[str, Any]] = {
             "desert": 0.10,
         },
     },
-    "Patient B — Immune Desert": {
+    "Patient B - Immune Desert": {
         "immune_profile": {
             "cd274_expression": "low",
             "msi_status": "MSS",
@@ -73,7 +73,7 @@ PATIENT_CASES: Dict[str, Dict[str, Any]] = {
             "desert": 0.67,
         },
     },
-    "Patient C — MSI-H Discovery": {
+    "Patient C - MSI-H Discovery": {
         "immune_profile": {
             "cd274_expression": "high",
             "msi_status": "MSI-H",
@@ -179,7 +179,7 @@ def run_pipeline(
 
 def _format_pipeline_status(case_key: str) -> str:
     lines = [
-        f"### 📋 Pipeline Execution Summary",
+        f"### Pipeline Execution Summary",
         "",
         f"**Selected case:** {case_key}",
         "",
@@ -198,13 +198,13 @@ def _format_pipeline_status(case_key: str) -> str:
     total = sum(float(t.rstrip("s")) for t in MODEL_TIMES.values())
     lines.append("")
     lines.append(f"**Total simulated time:** `{total:.1f}s`  ·  "
-                 f"**Status:** ✅ All 4 models completed successfully")
+                 f"**Status:** All 4 models completed successfully")
     return "\n".join(lines)
 
 
 def _format_immune_profile(profile: Dict[str, Any]) -> str:
     lines = [
-        "### 🔬 Immune Profile (MedGemma)",
+        "### Immune Profile (MedGemma)",
         "",
         "| Biomarker | Value | Clinical Relevance |",
         "|-----------|-------|-------------------|",
@@ -236,7 +236,7 @@ def _format_immune_profile(profile: Dict[str, Any]) -> str:
 
 def _format_medsigclip_scores(scores: Dict[str, float]) -> str:
     lines = [
-        "### 🎯 MedSigLIP Zero-Shot Phenotype Scores",
+        "### MedSigLIP Zero-Shot Phenotype Scores",
         "",
         "*Image–text contrastive scoring against phenotype descriptions*",
         "",
@@ -270,9 +270,9 @@ def _format_drug_pharmacology(
 ) -> str:
     if not drug_name or drug_name == "None":
         return (
-            "### 💉 Drug Pharmacology (TxGemma)\n\n"
+            "### Drug Pharmacology (TxGemma)\n\n"
             "No specific ICI drug recommended for this case. "
-            "Standard-of-care workup advised — see treatment recommendation above.\n\n"
+            "Standard-of-care workup advised - see treatment recommendation above.\n\n"
             "> *TxGemma is available for on-demand drug queries when an ICI agent is indicated.*"
         )
 
@@ -285,9 +285,9 @@ def _format_drug_pharmacology(
     explanation = txgemma.get_drug_explanation(lookup_name, profile)
 
     lines = [
-        f"### 💉 Drug Pharmacology: {drug_name.title()} (TxGemma)",
+        f"### Drug Pharmacology: {drug_name.title()} (TxGemma)",
         "",
-        f"*Powered by TxGemma (google/txgemma-9b-chat) — TDC-trained drug knowledge*",
+        f"*Powered by TxGemma (google/txgemma-9b-chat) - TDC-trained drug knowledge*",
         "",
     ]
 
@@ -321,7 +321,7 @@ def _format_drug_pharmacology(
     lines.append(gc)
     lines.append("")
 
-    lines.append("> ⚠️ AI-generated drug context from TxGemma — not clinical guidance. "
+    lines.append("> AI-generated drug context from TxGemma - not clinical guidance. "
                  "Treatment decisions are made by the rule-based guideline engine.")
 
     return "\n".join(lines)
@@ -333,24 +333,24 @@ def _format_drug_pharmacology(
 
 def build_app() -> gr.Blocks:
     with gr.Blocks(
-        title="ImmunoPath — H&E → Immunotherapy Decision Support",
+        title="ImmunoPath - H&E → Immunotherapy Decision Support",
     ) as app:
         # --- Header ---
         gr.Markdown(
-            "# 🧬 ImmunoPath\n"
+            "# ImmunoPath\n"
             "### H&E Histopathology → Immunotherapy Decision Support\n"
             "**Powered by 4 HAI-DEF Models:** MedGemma · TxGemma · Path Foundation · MedSigLIP"
         )
 
         # --- Safety disclaimer ---
         gr.Markdown(
-            "> ⚠️ **Research prototype — not for clinical use.** "
+            "> **Research prototype - not for clinical use.** "
             "All predictions require confirmatory molecular testing."
         )
 
         # --- Mode label ---
         gr.Markdown(
-            "> 🧪 **Proof-of-Concept Demo** — hardcoded outputs from real model "
+            "> **Proof-of-Concept Demo** - hardcoded outputs from real model "
             "predictions. See Kaggle notebooks for live GPU inference."
         )
 
@@ -367,14 +367,14 @@ def build_app() -> gr.Blocks:
         )
 
         upload_box = gr.File(
-            label="Upload H&E Patches (optional — used only with 'Upload Your Own')",
+            label="Upload H&E Patches (optional - used only with 'Upload Your Own')",
             file_count="multiple",
             file_types=["image"],
             visible=True,
         )
 
         run_btn = gr.Button(
-            "🚀 Run Pipeline",
+            "Run Pipeline",
             variant="primary",
             size="lg",
         )

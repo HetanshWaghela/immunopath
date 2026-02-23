@@ -2,7 +2,7 @@
 """TxGemma integration module for ImmunoPath.
 
 TxGemma (google/txgemma-9b-chat) is a text-only causal LM trained on
-Therapeutics Data Commons (TDC) — 66 drug-property prediction tasks.
+Therapeutics Data Commons (TDC) - 66 drug-property prediction tasks.
 
 It is used ONLY for drug explanations:
   - Mechanism of action (molecular level)
@@ -30,7 +30,7 @@ from typing import Any, Dict, List, Optional
 
 
 # ---------------------------------------------------------------------------
-# Mock drug knowledge base — curated from public pharmacology references
+# Mock drug knowledge base - curated from public pharmacology references
 # ---------------------------------------------------------------------------
 
 _MOCK_EXPLANATIONS: Dict[str, Dict[str, Any]] = {
@@ -143,7 +143,7 @@ _MOCK_EXPLANATIONS: Dict[str, Dict[str, Any]] = {
             "Immune-mediated colitis (higher incidence than anti-PD-1)",
             "Immune-mediated hepatitis",
             "Immune-mediated dermatitis (rash, pruritus)",
-            "Immune-mediated endocrinopathies (hypophysitis — characteristic of anti-CTLA-4)",
+            "Immune-mediated endocrinopathies (hypophysitis - characteristic of anti-CTLA-4)",
             "Immune-mediated neuropathies",
             "Fatigue",
             "Diarrhoea",
@@ -206,7 +206,7 @@ _MOCK_EXPLANATIONS: Dict[str, Dict[str, Any]] = {
 class TxGemmaExplainer:
     """Explains drug properties using TxGemma (TDC-trained).
 
-    TxGemma is used ONLY for drug explanations — mechanism of action,
+    TxGemma is used ONLY for drug explanations - mechanism of action,
     toxicity profiles, ADMET characteristics, and general pharmacological
     considerations.
 
@@ -221,7 +221,7 @@ class TxGemmaExplainer:
         Device map for model loading (``"auto"`` uses accelerate).
     use_mock : bool
         If ``True`` (default), return curated mock responses without loading
-        the 9B model — suitable for development, demos, and CPU-only
+        the 9B model - suitable for development, demos, and CPU-only
         environments.
     """
 
@@ -287,7 +287,7 @@ class TxGemmaExplainer:
             "## Drug to Explain\n"
             f"Drug Name: {drug_name}\n"
             "\n"
-            "## Context (for reference only — do NOT generate treatment "
+            "## Context (for reference only - do NOT generate treatment "
             "recommendations)\n"
             "This drug was selected by a rule-based clinical guideline engine "
             "for a patient with:\n"
@@ -306,7 +306,7 @@ class TxGemmaExplainer:
             "4. **General Considerations**: Pharmacological factors to "
             "consider\n"
             "\n"
-            "⚠️ WARNING: Do NOT provide treatment recommendations or cite "
+            "WARNING: Do NOT provide treatment recommendations or cite "
             "specific clinical trials. Those are handled by the rule-based "
             "guideline engine.\n"
             "\n"
@@ -382,7 +382,7 @@ class TxGemmaExplainer:
             )
             return explanation
 
-        # Unknown drug — return a generic placeholder
+        # Unknown drug - return a generic placeholder
         return {
             "drug_name": drug_key,
             "mechanism_of_action": f"Mechanism of action for {drug_key} not available in mock mode.",
@@ -456,7 +456,7 @@ class TxGemmaExplainer:
 
 if __name__ == "__main__":
     print("=" * 70)
-    print("TxGemma Drug Explainer — Mock Mode Demo")
+    print("TxGemma Drug Explainer - Mock Mode Demo")
     print("=" * 70)
 
     explainer = TxGemmaExplainer(use_mock=True)
@@ -471,15 +471,15 @@ if __name__ == "__main__":
     drugs = ["pembrolizumab", "nivolumab", "atezolizumab", "ipilimumab", "durvalumab"]
 
     for drug in drugs:
-        print(f"\n{'—' * 60}")
+        print(f"\n{'-' * 60}")
         print(f"Drug: {drug}")
-        print(f"{'—' * 60}")
+        print(f"{'-' * 60}")
         result = explainer.get_drug_explanation(drug, sample_signature)
         print(json.dumps(result, indent=2))
 
     # Unknown drug fallback
-    print(f"\n{'—' * 60}")
+    print(f"\n{'-' * 60}")
     print("Drug: unknown_drug_xyz (fallback)")
-    print(f"{'—' * 60}")
+    print(f"{'-' * 60}")
     result = explainer.get_drug_explanation("unknown_drug_xyz", sample_signature)
     print(json.dumps(result, indent=2))
