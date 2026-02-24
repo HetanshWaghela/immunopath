@@ -405,7 +405,7 @@ def build_app() -> gr.Blocks:
             "<center>"
             "Built for **MedGemma Impact Challenge** · "
             "Trained on 950 TCGA NSCLC patients · "
-            "Adapter: `hetanshwaghela/immunopath-medgemma-v2`"
+            "Adapter: `hetanshwaghela/immunopath-medgemma-v3.1`"
             "</center>"
         )
 

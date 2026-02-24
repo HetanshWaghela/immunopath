@@ -25,7 +25,9 @@ To determine whether this patient could benefit from immunotherapy - drugs like 
 > | PD-L1 IHC | $300–800 | 3–7 days | Limited |
 > | MSI Testing | $200–500 | 5–10 days | Rare |
 > | NGS Panel | $2,000–5,000 | 2–3 weeks | Very rare |
-> | **ImmunoPath** | **~$0.10** | **12 seconds** | **Any GPU** |
+> | **ImmunoPath** | **< $0.01*** | **12 seconds** | **Any GPU** |
+>
+> *GPU compute only: 12 seconds on L4 (~$0.85/hr on GCP) = ~$0.003/slide.*
 
 Computational pathology research has shown that H&E morphology carries immune-relevant information (Kather et al., *Nature Medicine* 2019; Fu et al., *Cancer Cell* 2020). But no system has connected H&E-based immune predictions to actual clinical decision support. That's what I built.
 
@@ -130,10 +132,11 @@ Training: A100-80GB, 77 minutes, 3 epochs with early stopping (patience=2). TIL 
 | TME Accuracy | 0.23 | 0.25 | **0.27** | >0.65 |
 | TIL Spearman ρ | 0.006 | -0.17 | **+0.12** | >0.60 |
 | TIL MAE | 0.38 | 0.26 | **0.16** | <0.20 |
+| Immune-score MAE | 0.21 | 0.30 | **0.21** | <0.20 |
 | JSON Compliance | 94% | **100%** | **100%** | - |
 | Schema Compliance | 16% | **100%** | **100%** | - |
 
-*Zero-shot from Phase 4 (188 samples). v2 and v3.1 from Phase 6 (94-sample held-out test set).*
+*Zero-shot from Phase 4 (188 samples). v2 and v3.1 from Phase 6 (94-sample held-out test set). Bold = best value per metric across versions. v3.1 is the primary published adapter (best TIL/TME); v2 is published as a comparison point (best CD274).*
 
 > ### Key Improvement: TIL Prediction Across Versions
 > ```
@@ -172,7 +175,7 @@ MedGemma produces the immune profile. The other 3 models and the guideline engin
 
 **Guideline Engine** - deterministic, rule-based, NCCN-aligned. MSI-H → pembrolizumab monotherapy. CD274-high + inflamed → consider ICI with confirmatory PD-L1 IHC. Every recommendation traces to a specific rule and requires confirmatory molecular testing. No black boxes in the clinical decision path.
 
-**TxGemma** - when the guideline engine recommends a drug, TxGemma explains its mechanism of action, toxicity profile, and ADMET characteristics. It's a pharmacology companion, not a prescriber.
+**TxGemma** - when the guideline engine recommends a drug, TxGemma explains its mechanism of action, toxicity profile, and ADMET characteristics. It's a pharmacology companion, not a prescriber. On Kaggle T4 GPUs, the 9B variant exceeded memory limits, so the pipeline gracefully falls back to a curated knowledge base derived from FDA labels and trial data. TxGemma runs successfully on A100/L4 hardware; the fallback ensures the pipeline still produces complete outputs on free-tier GPUs.
 
 **Path Foundation** - generates patch-level embeddings for visual similarity analysis. Enables comparison between a new patient's patches and known immune phenotype clusters.
 
@@ -195,6 +198,10 @@ Key engineering: TensorFlow's Path Foundation silently grabs all GPU memory on a
 
 It's a **triage tool** - not a replacement for molecular testing. It answers: "Which of my 50 newly diagnosed patients should I prioritize for the reference lab?" In a setting where sending all 50 costs $15,000–40,000, prioritizing the 10–15 most likely responders saves money, time, and lives.
 
+### Bottoms-Up Impact Estimate
+
+Consider a cancer center handling 800 new lung cancer patients per year (realistic for a regional referral hospital in India or Nigeria). Currently, maybe 80 of them (10%) get any biomarker testing. With ImmunoPath, all 800 get a triage screen from slides that are already being prepared. The top 200 (predicted high immune activity) get prioritized for confirmatory PD-L1 IHC at the reference lab. Of those, 40-80 may qualify for immunotherapy who would otherwise have received only standard chemotherapy. Immunotherapy improves 5-year survival from roughly 15% to 35% in eligible patients. That is 8-16 additional lives saved per year, per hospital, at almost no marginal cost. The triage screen costs under $0.01 per patient in GPU compute (under $8 total for all 800). Comprehensive molecular testing for all 800 patients would cost $1.6M at $2,000 each. Across the roughly 500 cancer centers in India alone that handle lung cancer, the potential reach is 4,000-8,000 patients per year who could be appropriately triaged.
+
 ### Scale
 
 | Metric | Value |
@@ -202,9 +209,9 @@ It's a **triage tool** - not a replacement for molecular testing. It answers: "W
 | New lung cancer cases/year | ~2.2M (GLOBOCAN 2022) |
 | Receive biomarker testing (LMICs) | <10% |
 | **Potential patients screened** | **500K–1M/year** |
-| Cost per slide (cloud GPU) | ~$0.10–0.50 |
+| Cost per slide (cloud GPU) | < $0.01 (12s on L4 at ~$0.85/hr) |
 | Cost of full molecular panel | $2,000–5,000 |
-| **Cost reduction** | **~10,000×** |
+| **Cost reduction** | **Orders of magnitude** |
 
 ### Deployment
 
@@ -234,13 +241,17 @@ It's a **triage tool** - not a replacement for molecular testing. It answers: "W
 
 ## 8. Repository & Resources
 
+**Live demo app:** [HuggingFace Space](https://huggingface.co/spaces/hetanshwaghela/ImmunoPath) (Gradio, no GPU required). Also runnable locally: `python demo_app.py`.
+
+**Open-weight adapters on HuggingFace** (fine-tuned from `google/medgemma-1.5-4b-it`):
+- [immunopath-medgemma-v3.1](https://huggingface.co/hetanshwaghela/immunopath-medgemma-v3.1) (primary)
+- [immunopath-medgemma-v2](https://huggingface.co/hetanshwaghela/immunopath-medgemma-v2) (comparison)
+
 | Resource | Link |
 |----------|------|
 | **GitHub** | [github.com/hetanshwaghela/medgemma-hackathon](https://github.com/hetanshwaghela/medgemma-hackathon) |
-| **Fine-tuned adapter** | `hetanshwaghela/immunopath-medgemma-v2` (HuggingFace) |
 | **Kaggle Notebook 1** | Fine-tuned MedGemma demo (single T4) |
 | **Kaggle Notebook 2** | Full 4-model pipeline (T4×2) |
-| **Gradio demo** | `python demo_app.py` (mock mode, no GPU) |
 | **Model Card** | `MODEL_CARD.md` in repository |
 
 ### Development Notebooks (15 total)

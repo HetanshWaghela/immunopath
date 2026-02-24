@@ -4,7 +4,7 @@
 
 ImmunoPath predicts tumor immune microenvironment biomarkers directly from routine H&E histopathology slides, enabling immunotherapy selection without expensive molecular assays. It integrates **4 HAI-DEF models** into a single clinical decision-support pipeline.
 
-> **MedGemma Impact Challenge Submission** | [Kaggle Competition](https://www.kaggle.com/competitions/medgemma-impact-challenge)
+> **MedGemma Impact Challenge Submission** | [Kaggle Competition](https://www.kaggle.com/competitions/med-gemma-impact-challenge)
 
 ---
 

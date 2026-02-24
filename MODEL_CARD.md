@@ -4,7 +4,7 @@
 
 | Field | Value |
 |-------|-------|
-| **Model Name** | ImmunoPath (v2 / v3.1) |
+| **Model Name** | ImmunoPath (v3.1) |
 | **Base Model** | `google/medgemma-1.5-4b-it` |
 | **Model Type** | Fine-tuned Vision-Language Model (VLM) |
 | **PEFT Method** | LoRA (rank=16, alpha=16) |
@@ -79,5 +79,5 @@
 
 ## Environmental Impact
 
-- Fine-tuning: ~38-77 minutes on A100-80GB GPU (~0.05 kg CO2e per run)
+- Fine-tuning: ~38-77 minutes on A100-80GB GPU (~0.05-0.10 kg CO2e per training run)
 - Inference: ~5-12 seconds per sample on L4 GPU
