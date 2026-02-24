@@ -43,7 +43,7 @@ The training signal comes from RNA-seq-derived immune signatures (not manual pat
 
 ### Model Sources
 
-- **Repository:** [github.com/hetanshwaghela/medgemma-hackathon](https://github.com/hetanshwaghela/medgemma-hackathon)
+- **Repository:** [github.com/hetanshwaghela/immunopath](https://github.com/hetanshwaghela/immunopath)
 - **Demo:** [HuggingFace Space](https://huggingface.co/spaces/hetanshwaghela/ImmunoPath)
 
 ## Uses
@@ -254,7 +254,7 @@ NVIDIA A100-SXM4-80GB (single GPU)
   title={ImmunoPath: H&E Histopathology to Immunotherapy Decision Support via Fine-Tuned MedGemma},
   author={Hetansh Waghela},
   year={2026},
-  url={https://github.com/hetanshwaghela/medgemma-hackathon}
+  url={https://github.com/hetanshwaghela/immunopath}
 }
 ```
 
@@ -264,7 +264,7 @@ Hetansh Waghela
 
 ## Model Card Contact
 
-Via GitHub issues at [github.com/hetanshwaghela/medgemma-hackathon](https://github.com/hetanshwaghela/medgemma-hackathon)
+Via GitHub issues at [github.com/hetanshwaghela/immunopath](https://github.com/hetanshwaghela/immunopath)
 
 ### Framework versions
 

@@ -19,6 +19,6 @@ Predicts immune biomarkers from routine H&E histopathology slides using 4 HAI-DE
 
 This is a proof-of-concept demo running in mock mode (hardcoded outputs from real model predictions). See Kaggle notebooks for live GPU inference.
 
-- GitHub: [github.com/hetanshwaghela/medgemma-hackathon](https://github.com/hetanshwaghela/medgemma-hackathon)
+- GitHub: [github.com/hetanshwaghela/immunopath](https://github.com/hetanshwaghela/immunopath)
 - Open-weight adapter: [hetanshwaghela/immunopath-medgemma-v3.1](https://huggingface.co/hetanshwaghela/immunopath-medgemma-v3.1)
 - Base model: [google/medgemma-1.5-4b-it](https://huggingface.co/google/medgemma-1.5-4b-it)

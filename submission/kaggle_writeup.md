@@ -106,7 +106,7 @@ All code, training logs, model adapters, and evaluation scripts are published op
 | Resource | URL |
 |----------|-----|
 | Video | [YouTube - 3 min demo] |
-| GitHub | [github.com/hetanshwaghela/medgemma-hackathon](https://github.com/hetanshwaghela/medgemma-hackathon) |
+| GitHub | [github.com/hetanshwaghela/immunopath](https://github.com/hetanshwaghela/immunopath) |
 | Live Demo | [HuggingFace Space](https://huggingface.co/spaces/hetanshwaghela/ImmunoPath) |
 | Adapter (v3.1) | [hetanshwaghela/immunopath-medgemma-v3.1](https://huggingface.co/hetanshwaghela/immunopath-medgemma-v3.1) |
 | Adapter (v2) | [hetanshwaghela/immunopath-medgemma-v2](https://huggingface.co/hetanshwaghela/immunopath-medgemma-v2) |

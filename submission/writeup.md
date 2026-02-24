@@ -267,7 +267,7 @@ Consider a cancer center handling 800 new lung cancer patients per year (realist
 
 | Resource | Link |
 |----------|------|
-| **GitHub** | [github.com/hetanshwaghela/medgemma-hackathon](https://github.com/hetanshwaghela/medgemma-hackathon) |
+| **GitHub** | [github.com/hetanshwaghela/immunopath](https://github.com/hetanshwaghela/immunopath) |
 | **Kaggle Notebook 1** | Fine-tuned MedGemma demo (single T4) |
 | **Kaggle Notebook 2** | Full 4-model pipeline (T4×2) |
 | **Model Card** | `MODEL_CARD.md` in repository |
