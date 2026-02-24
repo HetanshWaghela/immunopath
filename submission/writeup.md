@@ -37,7 +37,15 @@ Computational pathology research has shown that H&E morphology carries immune-re
 
 **ImmunoPath** fine-tunes MedGemma to predict 8 immune biomarkers directly from H&E patches, then wraps the predictions in a clinical decision-support pipeline using 3 additional HAI-DEF models.
 
-![ImmunoPath Architecture](../architecture.png)
+```
+H&E patch (512x512px)
+        |
+        +---> MedGemma 4B (fine-tuned LoRA) -----> 8 biomarkers (JSON)
+        |                                                  |
+        +---> Path Foundation ---> embeddings    Guideline Engine --> recommendation
+        |                                                  |
+        +---> MedSigLIP ---------> zero-shot score  TxGemma --> drug pharmacology
+```
 
 The core of the project - and where all the real engineering went - is **fine-tuning MedGemma**. The rest of the pipeline turns MedGemma's predictions into something clinically actionable. Sections 3–4 cover MedGemma in depth; Section 5 covers the full pipeline.
 
@@ -181,11 +189,9 @@ MedGemma produces the immune profile. The other 3 models and the guideline engin
 
 **MedSigLIP** - provides an independent confidence signal via zero-shot image-text scoring against phenotype descriptions. Doesn't depend on MedGemma's fine-tuning, so it serves as a cross-check.
 
-### Multi-GPU Orchestration (Kaggle T4×2)
+### Multi-GPU Orchestration (Kaggle T4x2)
 
-![Multi-GPU Orchestration](../multi-gpu-orchestration.png)
-
-Key engineering: TensorFlow's Path Foundation silently grabs all GPU memory on all visible GPUs at import. Fixed with `tf.config.set_visible_devices` before any TF loading. Also pinned `Pillow<12` (12.x removed `Image.ANTIALIAS`, breaking torchvision).
+Path Foundation (TensorFlow) and MedGemma/MedSigLIP (PyTorch) cannot share GPU memory. Path Foundation silently claims all visible GPU memory at TF import time. Fix: call `tf.config.set_visible_devices` before any TF loading to pin it to GPU 0 only, leaving GPU 1 for PyTorch models. Also pinned `Pillow<12` (12.x removed `Image.ANTIALIAS`, breaking torchvision).
 
 
 ---
@@ -194,7 +200,19 @@ Key engineering: TensorFlow's Path Foundation silently grabs all GPU memory on a
 
 ### Clinical Workflow
 
-![Clinical Workflow](../clinical_workflow.png)
+```
+Patient H&E slide exists
+        |
+        v
+ImmunoPath screen (12 sec, < $0.01)
+        |
+        +-- Low immune activity --> standard chemotherapy workup
+        |
+        +-- High immune activity --> prioritize for PD-L1 IHC at reference lab
+                                              |
+                                              v
+                                   Confirmatory result --> treatment decision
+```
 
 It's a **triage tool** - not a replacement for molecular testing. It answers: "Which of my 50 newly diagnosed patients should I prioritize for the reference lab?" In a setting where sending all 50 costs $15,000–40,000, prioritizing the 10–15 most likely responders saves money, time, and lives.
 
