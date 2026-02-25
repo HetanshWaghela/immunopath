@@ -73,3 +73,4 @@ immunopath_pipeline_result.json
 # Archive (dev notebooks, test scripts, internal docs)
 _archive/
 demo_app.py
+colab_notebooks/
